@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BizPilot Haiti</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#172033}
+header{background:#123c35;color:white;padding:22px}
+header h1{margin:0;font-size:25px}
+header p{margin-bottom:0;color:#d1e7df}
+main{padding:18px;max-width:700px;margin:auto}
+.card{background:white;padding:18px;border-radius:12px;margin-bottom:15px;box-shadow:0 2px 8px #0000000c}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:#e5f3ed;padding:15px;border-radius:10px}
+.stat small{color:#47675a}
+.stat h2{margin:8px 0;color:#123c35}
+input,button{width:100%;padding:12px;margin-top:9px;border-radius:8px;font-size:15px}
+input{border:1px solid #cbd5e1}
+button{border:0;background:#176b50;color:white;font-weight:bold}
+button:active{opacity:.8}
+.product{padding:12px;border-bottom:1px solid #eee}
+.delete{background:#b42318;margin-top:7px}
+footer{text-align:center;padding:20px;color:#64748b;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<h1>BizPilot Haiti</h1>
+<p>Gérez votre commerce intelligemment.</p>
+</header>
+<main>
+<div class="card">
+<h3>Tableau de bord</h3>
+<div class="stats">
+<div class="stat">
+<small>Produits</small>
+<h2 id="count">0</h2>
+</div>
+<div class="stat">
+<small>Valeur du stock</small>
+<h2 id="stock">0 G</h2>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h3>Ajouter un produit</h3>
+<input id="name" placeholder="Nom du produit">
+<input id="buy" type="number" placeholder="Prix d'achat (G)">
+<input id="sell" type="number" placeholder="Prix de vente (G)">
+<input id="qty" type="number" placeholder="Quantité en stock">
+<button onclick="addProduct()">Ajouter le produit</button>
+</div>
+
+<div class="card">
+<h3>Mes produits</h3>
+<div id="products">Aucun produit enregistré.</div>
+</div>
+</main>
+<footer>BizPilot Haiti © 2026 — Votre commerce, mieux géré.</footer>
+
+<script>
+let products=JSON.parse(localStorage.getItem("bizpilot_products")||"[]");
+
+function save(){
+localStorage.setItem("bizpilot_products",JSON.stringify(products));
+render();
+}
+
+function addProduct(){
+let name=document.getElementById("name").value.trim();
+let buy=Number(document.getElementById("buy").value);
+let sell=Number(document.getElementById("sell").value);
+let qty=Number(document.getElementById("qty").value);
+
+if(!name||buy<=0||sell<=0||qty<0||
+document.getElementById("qty").value===""){
+alert("Veuillez remplir correctement tous les champs.");
+return;
+}
+
+products.push({name,buy,sell,qty});
+save();
+
+document.getElementById("name").value="";
+document.getElementById("buy").value="";
+document.getElementById("sell").value="";
+document.getElementById("qty").value="";
+}
+
+function removeProduct(i){
+if(confirm("Supprimer ce produit ?")){
+products.splice(i,1);
+save();
+}
+}
+
+function render(){
+document.getElementById("count").textContent=products.length;
+let total=products.reduce((s,p)=>s+p.buy*p.qty,0);
+document.getElementById("stock").textContent=total.toLocaleString("fr-FR")+" G";
+
+let area=document.getElementById("products");
+area.innerHTML="";
+
+if(products.length===0){
+area.textContent="Aucun produit enregistré.";
+return;
+}
+
+products.forEach((p,i)=>{
+let div=document.createElement("div");
+div.className="product";
+let title=document.createElement("strong");
+title.textContent=p.name;
+let detail=document.createElement("p");
+detail.textContent="Achat: "+p.buy+" G | Vente: "+p.sell+" G | Stock: "+p.qty;
+let del=document.createElement("button");
+del.className="delete";
+del.textContent="Supprimer";
+del.onclick=()=>removeProduct(i);
+div.append(title,detail,del);
+area.appendChild(div);
+});
+}
+
+render();
+</script>
+</body>
+</html>
